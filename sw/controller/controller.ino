@@ -4,7 +4,8 @@
 #include <string.h>
 #include <Arduino.h>
 #include <avr/wdt.h>
-
+#include <ESP8266.h>
+#include <SoftwareSerial.h>
 #include <DHT22.h>
 
 /* Configuration, in production use USE_XTAL_PINS, USE_WDT (if watchdog is working in bootloader) */
@@ -27,6 +28,13 @@
 #define CONTROL_HIGH            3
 #define SERIAL_BUFFER_SIZE      64
 
+
+#define HOST_NAME "192.168.1.9"
+#define HOST_PORT (15001)
+
+SoftwareSerial swSerial(11, 12); /* RX:D11, TX:D12 */
+ESP8266 wifi(swSerial);
+
 uint8_t g_serialInputData[SERIAL_BUFFER_SIZE];
 boolean g_serialInputDataComplete = false;
 uint8_t g_serialDataIdx           = 0;
@@ -46,7 +54,7 @@ uint8_t       g_serialSyncPatternState = 0;
 #define D_OUT_CTRL7         6
 #define D_OUT_CTRL8         7
 
-/*Control PINS, TBD*/
+/*Control PINS*/
 #define D_OUT_CTRL1_PIN     7
 #define D_OUT_CTRL2_PIN     6
 #define D_OUT_CTRL3_PIN     5
@@ -141,17 +149,14 @@ void InitDigitalCtrls(void) {
         digitalCtrl[i].controlstatus = LOW;
     }
 
-
-
-
-    digitalCtrl[D_OUT_CTRL1_PIN].pin = D_OUT_CTRL1_PIN;
-    digitalCtrl[D_OUT_CTRL2_PIN].pin = D_OUT_CTRL2_PIN;
-    digitalCtrl[D_OUT_CTRL3_PIN].pin = D_OUT_CTRL3_PIN;
-    digitalCtrl[D_OUT_CTRL4_PIN].pin = D_OUT_CTRL4_PIN;
-    digitalCtrl[D_OUT_CTRL5_PIN].pin = D_OUT_CTRL5_PIN;
-    digitalCtrl[D_OUT_CTRL6_PIN].pin = D_OUT_CTRL6_PIN;
-    digitalCtrl[D_OUT_CTRL7_PIN].pin = D_OUT_CTRL7_PIN;
-    digitalCtrl[D_OUT_CTRL8_PIN].pin = D_OUT_CTRL8_PIN;
+    digitalCtrl[D_OUT_CTRL1].pin = D_OUT_CTRL1_PIN;
+    digitalCtrl[D_OUT_CTRL2].pin = D_OUT_CTRL2_PIN;
+    digitalCtrl[D_OUT_CTRL3].pin = D_OUT_CTRL3_PIN;
+    digitalCtrl[D_OUT_CTRL4].pin = D_OUT_CTRL4_PIN;
+    digitalCtrl[D_OUT_CTRL5].pin = D_OUT_CTRL5_PIN;
+    digitalCtrl[D_OUT_CTRL6].pin = D_OUT_CTRL6_PIN;
+    digitalCtrl[D_OUT_CTRL7].pin = D_OUT_CTRL7_PIN;
+    digitalCtrl[D_OUT_CTRL8].pin = D_OUT_CTRL8_PIN;
 
     pinMode(D_OUT_CTRL1_PIN,     OUTPUT);
     pinMode(D_OUT_CTRL2_PIN,     OUTPUT);
@@ -164,6 +169,14 @@ void InitDigitalCtrls(void) {
     pinMode(D_OUT_CTRL7_PIN,     OUTPUT);
     pinMode(D_OUT_CTRL8_PIN,     OUTPUT);
 
+    digitalWrite(D_OUT_CTRL1_PIN, LOW);
+    digitalWrite(D_OUT_CTRL2_PIN, LOW);
+    digitalWrite(D_OUT_CTRL3_PIN, LOW);
+    PORTB &= ~(1 << PORTB7);
+    PORTB &= ~(1 << PORTB6);
+    digitalWrite(D_OUT_CTRL6_PIN, LOW);
+    digitalWrite(D_OUT_CTRL7_PIN, LOW);
+    digitalWrite(D_OUT_CTRL8_PIN, LOW);
 }
 
 
@@ -178,6 +191,29 @@ static void SetupWatchDog() {
     LOGPRINT_LF("DBG: Setup watchdog...done");
 }
 
+void WifiSetup(void) {
+    LOGPRINT("FW Version:");
+    LOGPRINT_LF(wifi.getVersion().c_str());
+    if (wifi.setOprToStationSoftAP()) {
+        LOGPRINT_LF("to station + softap ok");
+    } else {
+    LOGPRINT_LF("to station + softap err");
+    }
+    if (wifi.joinAP(SSID, PASSWORD)) {
+        LOGPRINT_LF("Join AP success");
+        LOGPRINT("IP:");
+        LOGPRINT_LF( wifi.getLocalIP().c_str());
+    } else {
+    LOGPRINT_LF("Join AP failure\r\n");
+    }
+    if (wifi.disableMUX()) {
+        LOGPRINT_LF("single ok\r\n");
+    } else {
+        LOGPRINT_LF("single err\r\n");
+    }
+    LOGPRINT_LF("WifiSetup end\r\n");
+}
+
 
 void setup() {
     MCUSR=0;
@@ -190,6 +226,7 @@ void setup() {
     
     InitDigitalCtrls();
 
+    WifiSetup();
     LOGPRINT_LF("DBG: setup: done!");
 }
 
@@ -198,15 +235,15 @@ void setup() {
 static void ControlTemperature() {
     /*Heating needed? */
     if ((float)internal_temperature < g_settings.minimum_temperature) {
-        digitalCtrl[D_OUT_CTRL1_PIN].controlstatus = HIGH;
+        digitalCtrl[D_OUT_CTRL1].controlstatus = HIGH;
     } else {
-        digitalCtrl[D_OUT_CTRL1_PIN].controlstatus = LOW;
+        digitalCtrl[D_OUT_CTRL1].controlstatus = LOW;
     }
     /*Cooling needed?*/
     if ((float)internal_temperature > g_settings.ac_start_temperature) {
-        digitalCtrl[D_OUT_CTRL2_PIN].controlstatus = HIGH;
+        digitalCtrl[D_OUT_CTRL2].controlstatus = HIGH;
     } else {
-        digitalCtrl[D_OUT_CTRL2_PIN].controlstatus = LOW;
+        digitalCtrl[D_OUT_CTRL2].controlstatus = LOW;
     }
 }
 
@@ -220,12 +257,12 @@ void WriteControlOutputs(void) {
     digitalWrite(D_OUT_CTRL7_PIN, digitalCtrl[D_OUT_CTRL7].controlstatus);
     digitalWrite(D_OUT_CTRL8_PIN, digitalCtrl[D_OUT_CTRL8].controlstatus);
 
-    if(digitalCtrl[D_OUT_CTRL4_PIN].controlstatus) {
+    if(digitalCtrl[D_OUT_CTRL4].controlstatus) {
         PORTB |= (1 << PORTB7);
     } else {
         PORTB &= ~(1 << PORTB7);
     }
-    if(digitalCtrl[D_OUT_CTRL5_PIN].controlstatus) {
+    if(digitalCtrl[D_OUT_CTRL5].controlstatus) {
         PORTB |= (1 << PORTB6);
     } else {
         PORTB &= ~(1 << PORTB6);
@@ -299,6 +336,69 @@ void serialEvent() {
 
 
 
+uint8_t buffer[128] = {0};
+
+typedef struct msg_header_s {
+    uint8_t     msgid;
+    uint8_t     receiver;
+    uint8_t     sender;
+    uint8_t     pad;
+}msg_header_s;
+
+
+typedef struct gh_report_s {
+    msg_header_s    header;
+    float           temperature;
+    float           humidity;
+    uint8_t         heating;
+    uint8_t         cooling;
+    uint8_t         watering;
+    uint8_t         pad;
+}gh_report_s;
+
+typedef struct gh_request_s {
+    msg_header_s    header;
+    float           tgt_min_temperature;
+    float           tgt_max_temperature;
+    float           tgt_humidity;
+    uint8_t         cmd_heating;
+    uint8_t         cmd_cooling;
+    uint8_t         cmd_watering;
+    uint8_t         pad;
+}gh_request_s;
+
+
+gh_report_s         report;
+uint8_t             g_rcvbuffer[64];
+
+void SendReport(void) {
+    if (wifi.registerUDP(HOST_NAME, HOST_PORT)) {
+        Serial.print("register udp ok\r\n");
+        report.header.msgid    = 0x10;
+        report.header.receiver = 0x10;
+        report.header.sender   = 0x30;
+        report.header.pad      = 0xFF;
+        report.temperature     = internal_temperature;
+        report.humidity        = internal_humidity;
+        report.heating         = digitalCtrl[D_OUT_CTRL1].controlstatus;
+        report.cooling         = digitalCtrl[D_OUT_CTRL2].controlstatus;
+        report.watering        = digitalCtrl[D_OUT_CTRL3].controlstatus;
+        report.pad             = 0xFF;
+        wifi.send((const uint8_t*)&report, sizeof(report));
+        uint32_t len = wifi.recv(g_rcvbuffer, sizeof(g_rcvbuffer), 1000);
+        if (len > 0) {
+            Serial.print("Received: msg");
+        } 
+        if (wifi.unregisterUDP()) {
+            Serial.print("unregister udp ok\r\n");
+        } else {
+            Serial.print("unregister udp err\r\n");
+        }
+    } else {
+        Serial.print("register udp err\r\n");
+    }
+}
+
 void loop() {
     // at every loop: reset the watchdog timer
     if (g_useSwWatchDog) {
@@ -314,13 +414,14 @@ void loop() {
         LOGPRINT(" Hum: ");
         LOGPRINT(internal_humidity);
         LOGPRINT(" H: ");
-        LOGPRINT(digitalCtrl[D_OUT_CTRL1_PIN].controlstatus);
+        LOGPRINT(digitalCtrl[D_OUT_CTRL1].controlstatus);
         LOGPRINT(" C: ");
-        LOGPRINT(digitalCtrl[D_OUT_CTRL2_PIN].controlstatus);
+        LOGPRINT(digitalCtrl[D_OUT_CTRL2].controlstatus);
         LOGPRINT(" TS: ");
         LOGPRINT_LF(now);
         ControlTemperature();
         g_last_ts = now;
+        SendReport();
     } else {
         
     }
