@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<link rel="stylesheet" type="text/css" href="styles/main.css">
+<link rel="stylesheet" type="text/css" href="styles/style.css" />
+<link rel="stylesheet" type="text/css" href="styles/subModal.css" />
+<script type="text/javascript" src="js/common.js"></script>
+<script type="text/javascript" src="js/subModal.js"></script>
+<title>Page Title</title>
+
+<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+<script src="/js/d3.v3.min.js"></script>
+
+<style>
+
+button {
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+}
+
+
+body {
+    font: 12px Arial;
+    font-color: #00FF00;
+    background: url('/images/bg.jpg') no-repeat;
+}
+
+path { 
+  stroke: #2222FF;
+    stroke-width: 2;
+    fill: none;
+}
+
+text {
+    color: #00FF00;
+}
+    
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #CCCCCC;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+
+.grid .tick {
+    stroke: #DDDDDD;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+.grid path {
+    stroke-width: 0;
+}
+
+}
+
+</style>
+
+</head>
+<body>
+
+<script type="text/javascript">
+
+var temperature =  0.0
+var humidity =  0.0
+
+function overlay() {
+    el = document.getElementById("overlay");
+    el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible";
+}
+
+function executeQuery() {
+  $.ajax({
+    dataType: "json",
+    url: 'cgi-bin/tehuco-cgi?page=mainpage&action=refresh',
+    success: function(data) {
+      $("#temperature").html(data.temperature);
+      $("#humidity").html(data.humidity);
+      $("#cooling").html(data.cooling);
+      $("#heating").html(data.heating);
+    }
+  });
+  setTimeout(executeQuery, 15000); // you could choose not to continue on failure...
+}
+
+$(document).ready(function() {
+  // run the first time; all subsequent calls will take care of themselves
+  setTimeout(executeQuery, 500);
+});
+
+function UpdateServer(action) {
+    var data = { "page" : "mainpage", "action": action};
+    
+    $.get("/cgi-bin/tehuco-cgi", data, success, "json");
+
+    function success( data ) {
+        $("#room1_target_temperature").html(data.room1_target_temperature);
+    }
+    
+}
+    
+function ButtonPressed(action) {
+    UpdateServer(action);
+    return true;
+}
+
+function ServiceMenu() {
+    $('#keypad').keypad();
+}
+
+ 
+</script>
+
+
+
+<div class="display_grid">
+    <div class="pageHeaderMain">
+		<div class="pageHeader1">
+			<h4><div id="datetime">00:00</div></h4>
+		</div>
+		<div class="pageHeader">
+			<div id="connection_status"><img src="/images/notconnected.png" title="Ei yhteytt&auml;"></div>
+			<div id="alert_status"><a href="#" onclick="showPopWin('alarms', 400, 400, null);"><img src="/images/alert.png" title="Ei yhteytt&auml;"></a></div>
+            <a href="#" onclick="showPopWin('stats.html', 900, 500, null);"><img src="/images/graph.png" title="Tilastot"></a>
+			<a href="settings.html"><img src="/images/settings.png" title="Asetukset"></a>
+			<a href="logout"><img src="/images/logout.png" title="Kirjaudu ulos"></a>
+		</div>
+    </div>
+    <div class="leftbar">
+        <div class="leftheader">
+            <h2>KASVIKAAPPI</h2><br>
+        </div>
+        <div class="leftdisplay1">
+            <h3>L&Auml;MP&Ouml;TILA &deg;C</h3>
+            <h5><div id="temperature">--</div></h5>
+        </div>
+            <div class="leftdisplay2">
+            <h3>KOSTEUS %</h3>
+            <h5><div id="humidity">--</div></h5>
+        </div>
+        <div class="leftdisplay3">
+            <h3>VIILENNYS</h3>
+            <h5><div id="cooling">--</div></h5>
+        </div>
+            <div class="leftdisplay4">
+            <h3>L&Auml;MMITYS</h3>
+            <h5><div id="heating">--</div></h5>
+        </div>
+        <div id="area_r1_temp"></div>
+        <div id="area_r1_hum"></div>
+    </div>
+
+</div>
+</body>
+
+</html>

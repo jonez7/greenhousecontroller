@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8">
+	 <link rel="stylesheet" type="text/css" href="/styles/settings.css">
+	 <title>Page Title</title>
+     
+<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
+
+<style>
+
+button {
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+}
+
+</style>
+
+</head>
+<body>
+
+<script>
+    
+
+function UpdateServer(action) {
+    var data = { "page" : "servicedata", 
+                 "action": action};
+    
+    $.get("/cgi-bin/tehuco-cgi", data, success, "json");
+    
+    function success( data ) {
+        $("#room1_ac_inlet").html(data.room1_ac_inlet);
+        $("#room1_ac_outlet").html(data.room1_ac_outlet);
+        $("#room1_humidification_on_time").html(data.room1_humidification_on_time);
+        $("#room1_humidification_off_time").html(data.room1_humidification_off_time);
+        $("#room2_ac_inlet").html(data.room2_ac_inlet);
+        $("#room2_ac_outlet").html(data.room2_ac_outlet);
+        $("#room2_humidification_on_time").html(data.room2_humidification_on_time);
+        $("#room2_humidification_off_time").html(data.room2_humidification_off_time);
+    }
+}
+
+function ButtonPressed(action) {
+    UpdateServer(action);
+    return true;
+}
+
+
+$( document ).ready(function() {
+    UpdateServer('refresh');
+});
+
+</script>
+
+
+<div class="display_grid">
+    <div class="pageHeader">
+        <a href="settings.html"><img src="/images/settings.png"></a>
+    </div>
+    <div class="leftbar">
+        <h2>HUONE 1</h2><br>
+        
+        <table style="width:100%">
+            <tr>
+                <td>Ilmastointi (%)</td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r1AcInDec');">-</a></td>
+                <td><div id="room1_ac_inlet">--</div></td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r1AcInInc');">+</a></td>
+            </tr>
+            <tr>
+                <td>Kostutus p&auml;&auml;ll&auml; (s)</td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r1HumOnDec');">-</a></td>
+                <td><div id="room1_humidification_on_time">--</div></td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r1HumOnInc');">+</a></td>
+            </tr>
+            <tr>
+                <td>Kostutus pois (s)</td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r1HumOffDec');">-</a></td>
+                <td><div id="room1_humidification_off_time">--</div></td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r1HumOffInc');">+</a></td>
+            </tr>
+        </table> 
+        
+    </div>
+    <div class="rightbar">
+        <h2>HUONE 1</h2><br>
+        <table style="width:100%">
+            <tr>
+                <td>Ilmastointi (%)</td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r2AcInDec');">-</a></td>
+                <td><div id="room2_ac_inlet">--</div></td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r2AcInInc');">+</a></td>
+            </tr>
+            <tr>
+                <td>Kostutus p&auml;&auml;ll&auml; (s)</td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r2HumOnDec');">-</a></td>
+                <td><div id="room2_humidification_on_time">--</div></td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r2HumOnInc');">+</a></td>
+            </tr>
+            <tr>
+                <td>Kostutus pois (s)</td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r2HumOffDec');">-</a></td>
+                <td><div id="room2_humidification_off_time">--</div></td>
+                <td><a href="javascript:void(0)" class="inc" onclick="ButtonPressed('r2HumOffInc');">+</a></td>
+            </tr>
+        </table> 
+        
+    </div>
+</div>
+</body>
+
+</html>

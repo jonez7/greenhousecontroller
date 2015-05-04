@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	 <meta http-equiv="content-type" content="text/html; charset=utf-8">
+	 <link rel="stylesheet" type="text/css" href="styles/layout.css">
+	 <title>Page Title</title>
+     
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/
+libs/jquery/1.3.0/jquery.min.js"></script>
+<script type="text/javascript">
+var auto_refresh = setInterval(
+function ()
+{
+$('#load_updates').load('getmeas').fadeIn("slow");
+}, 10); // refresh every 1000 milliseconds
+
+</script>
+</head>
+<body>
+
+
+
+<div class="display_grid">
+	  <div class="pageHeader">
+          <h1>OIL TEMP</h1>
+	  </div>
+	  <div class="leftbar">
+	 	  <div class="leftdisplay1">
+              <h3>SPEED km/h</h3>
+              <h4>76.4</h4>
+	 	  </div>
+	 	  <div class="leftdisplay2">
+              <h3>COOLANT TEMP &deg;C</h3>
+              <h4>104</h4>
+	 	  </div>
+	 	  <div class="leftdisplay3">
+              <h3>EXHAUST TEMP &deg;C</h3>
+              <h4>832</h4>
+	 	  </div>
+	 	  <div class="leftdisplay4">
+              <a href="3"> <img src="images/left.png" height="40px" align="left"></a>
+	 	  </div>
+	  </div>
+	  <div class="centerbar">
+          <div class="center_display">
+              <h5><div id="load_updates"> </div> &deg;C</h5>
+              
+          </div>
+          <div class="centerbottom1">
+              <h4>SETTINGS</h4>
+          </div>
+      </div>
+	  <div class="rightbar">
+	 	  <div class="rightdisplay1">
+              <h3>EXHAUST<br>PRESSURE bar</h3>
+              <h4>4.32</h4>
+	 	  </div>
+	 	  <div class="rightdisplay2">
+              <h3>LAMBDA</h3>
+              <h4>1.01</h4>
+	 	  </div>
+	 	  <div class="rightdisplay3">
+              <h3>VOLTAGE v</h3>
+              <h4>14.3</h4>
+	 	  </div>
+	 	  <div class="rightdisplay4">
+              <a href="2"> <img src="images/right.png" height="40px" align="right"></a>
+	 	  </div>
+	  </div>
+</div>
+</body>
+
+</html>
