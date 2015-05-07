@@ -12,7 +12,7 @@ from pyrrd.graph import ColorAttributes, Graph
 
 def GenerateGraph():
 
-    data = db.GetDataTemperatureRrd(10000)
+    data = db.GetDataHumidityRrd(10000)
     #print len(data)
 
     filename = 'humidity.rrd'

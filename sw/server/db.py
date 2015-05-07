@@ -121,7 +121,6 @@ def GetDataHumidityRrd(amount):
             rowdata = []
             rowdata.append(row["time"])
             rowdata.append(row["humidity"])
-            rowdata.append(row["tgt_humidity"])
             data.append(rowdata)
         return data
 
