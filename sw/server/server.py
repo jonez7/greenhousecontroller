@@ -25,9 +25,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class MainHandler(BaseHandler):
     def get(self):
-        if not self.current_user:
-            self.redirect("/login")
-            return
+#        if not self.current_user:
+#            self.redirect("/login")
+#            return
         f = open("index_server.html", "r")
         data = f.read()
         f.close()
@@ -97,6 +97,32 @@ class CgiHandler(tornado.web.RequestHandler):
             self.write(ret)
 
 class ReportHandler(tornado.web.RequestHandler):
+    def get(self):
+        print(self.request.uri)
+        ts =  int(self.get_argument("ts", default=None, strip=False))
+        temp = self.get_argument("temperature", default=None, strip=False)
+        currentstatus.temperature = "%.2f" % float(temp)
+        currentstatus.humidity    = "%.2f" % float(self.get_argument("humidity", default=None, strip=False))
+        currentstatus.heating     = self.get_argument("heating", default=None, strip=False)
+        currentstatus.cooling     = self.get_argument("cooling", default=None, strip=False)
+        currentstatus.acc_temperature += float(currentstatus.temperature)
+        currentstatus.acc_humidity    += float(currentstatus.humidity)
+        currentstatus.acc_heating     += float(currentstatus.heating)
+        currentstatus.acc_cooling     += float(currentstatus.cooling)
+        currentstatus.acc_counter += 1
+        if currentstatus.acc_counter > 12:
+            t = float(currentstatus.acc_temperature) / float(currentstatus.acc_counter)
+            h = float(currentstatus.acc_humidity) / float(currentstatus.acc_counter)
+            he = int(float(currentstatus.acc_heating) / float(currentstatus.acc_counter))
+            co = int(float(currentstatus.acc_cooling) / float(currentstatus.acc_counter))
+            db.InsertData(0, ts, t, h, 0, 0, he, co, 0, 0)
+            currentstatus.acc_temperature = 0.0
+            currentstatus.acc_humidity    = 0.0
+            currentstatus.acc_heating     = 0.0
+            currentstatus.acc_cooling     = 0.0
+            currentstatus.acc_counter     = 0
+        self.write("ok")
+
     def post(self):  
         print("report:")
         f = open("report.log", "a")
@@ -136,131 +162,6 @@ class ResponseHandler(tornado.web.RequestHandler):
         print("response received")
 
         currentstatus.last_response_ts = int(time.time())
-
-        data = self.request.body
-        print data
-        jsonstr = "{" + data.split("{")[1]
-        
-        json_data=json.loads(jsonstr)
-
-        for key, value in json_data.iteritems():
-#            print key, value
-
-            if "datetime" == key:
-                currentstatus.last_response = value
-
-            if "room1_acboost_max_temp" == key:
-                currentstatus.room1_acboost_max_temp = value
-            if "room2_acboost_max_temp" == key:
-                currentstatus.room2_acboost_max_temp = value
-
-            if "room1_status" == key:
-                currentstatus.room1_status = value
-            if "room2_status" == key:
-                currentstatus.room2_status = value
-
-            if "room1_temperature" == key:
-                currentstatus.room1_temperature = value
-            if "room2_temperature" == key:
-                currentstatus.room2_temperature = value
-
-            if "room1_humidity" == key:
-                currentstatus.room1_humidity = value
-            if "room2_humidity" == key:
-                currentstatus.room2_humidity = value
-
-            if "room1_light" == key:
-                currentstatus.room1_light = value
-            if "room2_light" == key:
-                currentstatus.room2_light = value
-
-            if "room1_ac_speed" == key:
-                currentstatus.room1_ac_speed = value
-            if "room2_ac_speed" == key:
-                currentstatus.room2_ac_speed = value
-
-            if "room1_target_temperature" == key:
-                currentstatus.room1_target_temperature = value
-            if "room2_target_temperature" == key:
-                currentstatus.room2_target_temperature = value
-
-            if "room1_target_humidity" == key:
-                currentstatus.room1_target_humidity = value
-            if "room2_target_humidity" == key:
-                currentstatus.room2_target_humidity = value
-
-            if "room1_lights_on_time" == key:
-                currentstatus.room1_lights_on_time = value
-            if "room2_lights_on_time" == key:
-                currentstatus.room2_lights_on_time = value
-
-            if "room1_lights_off_time" == key:
-                currentstatus.room1_lights_off_time = value
-            if "room2_lights_off_time" == key:
-                currentstatus.room2_lights_off_time = value
-
-            if "THCtrlConnectionLost" == key:
-                currentstatus.alert_THCtrlConnectionLost = value
-
-            if "THS1ConnectionLost" == key:
-                currentstatus.alert_THS1ConnectionLost = value
-
-            if "THS2ConnectionLost" == key:
-                currentstatus.alert_THS2ConnectionLost = value
-
-            if "THSLConnectionLost" == key:
-                currentstatus.alert_THSLConnectionLost = value
-
-            if "room1TempControlFailure" == key:
-                currentstatus.alert_room1TempControlFailure = value
-
-            if "room1HumControlFailure" == key:
-                currentstatus.alert_room1HumControlFailure = value
-
-            if "room2HumControlFailure" == key:
-                currentstatus.alert_room2HumControlFailure = value
-
-            if "room1CoolControlFailure" == key:
-                currentstatus.alert_room1CoolControlFailure = value
-
-            if "room2CoolControlFailure" == key:
-                currentstatus.alert_room2CoolControlFailure = value
-
-            if "room1_lightmode" == key:
-                currentstatus.room1_light_mode = value
-
-            if "room2_lightmode" == key:
-                currentstatus.room2_light_mode = value
-
-            if "room1TempCtrlStatus" == key:
-                currentstatus.room1_temp_ctrl_status = value
-
-            if "room1HumCtrlStatus" == key:
-                currentstatus.room1_hum_ctrl_status = value
-
-            if "room2TempCtrlStatus" == key:
-                currentstatus.room2_temp_ctrl_status = value
-
-            if "room2HumCtrlStatus" == key:
-                currentstatus.room2_hum_ctrl_status = value
-
-            if "room1_ac_inlet" == key:
-                currentstatus.room1_ac_inlet = value
-
-            if "room2_ac_inlet" == key:
-                currentstatus.room2_ac_inlet = value
-
-            if "room1_humidification_on_time" == key:
-                currentstatus.room1_humidification_on_time = int(value)
-
-            if "room2_humidification_on_time" == key:
-                currentstatus.room2_humidification_on_time = int(value)
-
-            if "room1_humidification_off_time" == key:
-                currentstatus.room1_humidification_off_time = int(value)
-
-            if "room2_humidification_off_time" == key:
-                currentstatus.room2_humidification_off_time = int(value)
 
         self.write("response handled")
 

@@ -37,10 +37,11 @@ def InsertData(room, ts, temperature, humidity, soil_1, soil_2, heating_time, co
     
     with con:
         cur = con.cursor()
+        print "DB:", ts, temperature, humidity,soil_1, soil_2, heating_time, cooling_time, watering_time, alarms
         cur.execute("INSERT INTO kaappi(id, time, temperature, humidity, soil_1, soil_2, heating_time, \
                                          cooling_time, watering_time, alarms) \
                                          VALUES(0 , %i, %f, %f, %f, %f, %i, %i, %i, %i)" % 
-                                         (room, ts, temperature ,humidity, soil_1, soil_2, heating_time, cooling_time, watering_time, alarms))
+                                         (ts, temperature ,humidity, soil_1, soil_2, heating_time, cooling_time, watering_time, alarms))
         con.commit()
 
     
