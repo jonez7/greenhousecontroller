@@ -15,9 +15,9 @@ def GenerateGraph():
     data = db.GetDataTemperatureRrd(10000)
     #print len(data)
 
-    filename = 'temperature.rrd'
-    graphfile = 'temperature.png'
-    graphfileLg = 'temperature-large.png'
+    filename = 'humidity.rrd'
+    graphfile = 'humidity.png'
+    graphfileLg = 'humidity-large.png'
 
     day = 24 * 60 * 60
     week = 7 * day
@@ -33,7 +33,7 @@ def GenerateGraph():
 
     # Let's create and RRD file and dump some data in it
     dss = []
-    ds1 = DS(dsName='temperature', dsType='GAUGE', heartbeat=60)
+    ds1 = DS(dsName='humidity', dsType='GAUGE', heartbeat=60)
     dss.extend([ds1])
 
     #week: RA:AVERAGE:0.5:6:336
@@ -99,7 +99,7 @@ def GenerateGraph():
 
     # Now that we've got everything set up, let's make a graph
     #startTime = endTime - 3 * month
-    g = Graph(graphfile, start=startTime, end=endTime, vertical_label='lampotila', color=ca)
+    g = Graph(graphfile, start=startTime, end=endTime, vertical_label='kosteus', color=ca)
     g.data.extend([def1, vdef1, sensor1])
     g.write()
 

@@ -157,7 +157,10 @@ function ServiceMenu() {
             <h3>L&Auml;MMITYS</h3>
             <h5><div id="heating">--</div></h5>
         </div>
-        <div id="area_r1_temp"></div>
+        <div id="area_r1_temp">
+            <img src="temperature-large.png?t=" width='380' onload='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 60000)' alt='' />
+            <img src="humidity-large.png?t=" width='380' onload='setTimeout(function() {src = src.substring(0, (src.lastIndexOf("t=")+2))+(new Date()).getTime()}, 60000)' alt='' />
+        </div>
         <div id="area_r1_hum"></div>
     </div>
     <div class="rightbar">

@@ -138,9 +138,9 @@ if __name__ == "__main__":
     if (options.create):
         CreateDb()
 
-    data = GetDataTemperature(100)
+    data = GetDataTemperatureRrd(100)
     print data
-    data = GetDataHumidity(100)
-    print data
+#    data = GetDataHumidity(100)
+#    print data
     
     

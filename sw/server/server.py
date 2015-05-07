@@ -8,6 +8,8 @@ import time
 import uuid
 import hashlib
 import settings
+import graph_temp
+import graph_hum
  
 def hash_password(password):
     # uuid is used to generate a random number
@@ -121,6 +123,8 @@ class ReportHandler(tornado.web.RequestHandler):
             currentstatus.acc_heating     = 0.0
             currentstatus.acc_cooling     = 0.0
             currentstatus.acc_counter     = 0
+            graph_temp.GenerateGraph()
+            graph_hum.GenerateGraph()
         self.write("ok")
 
     def post(self):  
